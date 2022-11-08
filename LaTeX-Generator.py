@@ -4,6 +4,17 @@
 
 import numpy as np
 
+
+
+
+
+
+def isListOrArray(input):
+    if type(input) in [type([]), type(np.arr([]))]:
+        return True
+    else:
+        return False
+
 # The package amsmath is required for this to compile correctly on LaTeX.
 # No need for numPy for this function, as it takes the elements of a list and prints them out in LaTeX format.
 # This only prints out 2D arrays.
@@ -14,7 +25,9 @@ def latexMatrix(matrix, packages, matrixType = "b"):
     if "amsmath" not in packages:
         raise TypeError("amsmath package is required")
     
-    matrix = list(matrix) # Making sure it's a list, although it'd probably work if it were a numpy matrix too.
+    # matrix = list(matrix) # Making sure it's a list, although it'd probably work if it were a numpy matrix too.
+    matrix = np.array(matrix) # Trying it out if I make it an array
+
 
     latexCode = [] # Initialize the latex code list
 
@@ -23,7 +36,7 @@ def latexMatrix(matrix, packages, matrixType = "b"):
 
     # Note: you must convert all of the numbers into strings for the .join method to work.
     for row in matrix:
-        if type(row) == type([]):
+        if matrix.ndim == 2: # type(row) == type([]):
             # Add each element in the row to the list
             for element in row:
                 latexCode.append(str(element)) # there can be any number of columns
@@ -33,12 +46,16 @@ def latexMatrix(matrix, packages, matrixType = "b"):
                     # Add an "&" symbol in between the elements in a row
                     latexCode.append("&")
             
+            print(matrix[-1])
+            print(row)
+            print(row == matrix[-1])
+
             # This conditional prevents it from adding "\\" after the last row
             if row != matrix[-1]:
                 # After each row except for the last one, you need to add "\\"
                 latexCode.append("\\\\")
         else:
-            latexCode.append(str(element)) # there must only be one column, so no need to iterate row
+            latexCode.append(str(row)) # there must only be one column, so no need to iterate row
     
     # Adds the ending part of the matrix command
     latexCode.append("\\end{" + matrixType + "matrix}")
@@ -48,7 +65,41 @@ def latexMatrix(matrix, packages, matrixType = "b"):
 
     return latexCodeString
 
+# This is a shorthand for the inverse method in numPy
+def inverse(matrix):
+    matrix = np.array(matrix) # Making sure it's a numPy array
+
+    return np.linalg.inv(matrix) # Returns in the inverse of the matrix as a numpy array
+
+# This is just a shorthand for the determinant method in numPy
+def det(matrix):
+    matrix = np.array(matrix) # Making sure it's a numPy array
+
+    return np.linalg.det(matrix) # Returns the determinant of the matrix
+
+def transpose(matrix):
+    matrix = np.array(matrix) # Making sure it's a numPy array
+
+    return matrix.T # Returns the transpose of the matrix
+
+def cofactor(matrix):
+    matrix = np.array(matrix)
+    determinant = det(matrix)
+    inv = inverse(matrix)
+    
+    if determinant != 0:
+        return transpose(inv) * determinant
+    else:
+        raise ValueError("Determinant was zero - matrix was singular")
+
+
+
+
+# MAIN #
+
 packageList = ["amsmath"]
 testingMatrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
 print(latexMatrix(testingMatrix, packageList))
+
+print(latexMatrix(cofactor(testingMatrix), packageList))
